@@ -7,7 +7,7 @@ from aws_cdk import (
 )
 
 
-class KubeCdkStack(core.Stack):
+class VPCStack(core.Stack):
 
     def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -29,11 +29,6 @@ class KubeCdkStack(core.Stack):
                 ec2.SubnetConfiguration(
                     name="Private",
                     subnet_type=ec2.SubnetType.PRIVATE,
-                    cidr_mask=24
-                ),
-                ec2.SubnetConfiguration(
-                    name="Isolate",
-                    subnet_type=ec2.SubnetType.ISOLATED,
                     cidr_mask=24
                 )
             ],

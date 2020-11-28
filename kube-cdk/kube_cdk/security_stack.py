@@ -18,12 +18,34 @@ class SecurityStack(core.Stack):
             allow_all_outbound=True
         )
 
+        self.public_sg = ec2.SecurityGroup(self, 'publicsg',
+            security_group_name='public-sg',
+            vpc=vpc,
+            description="SG for public instances",
+            allow_all_outbound=True
+        )
+
+        self.private_sg = ec2.SecurityGroup(self, 'privatesg',
+            security_group_name='private-sg',
+            vpc=vpc,
+            description="SG for private instances",
+            allow_all_outbound=True
+        )
+
         self.bastion_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22),"SSH Access")
 
-        instance_role = iam.Role(self, 'instanceprofile',
-            assumed_by=iam.ServicePrincipal(service='lambda.amazonaws.com'),
+        self.instance_role = iam.Role(self, 'instancerole',
+            assumed_by=iam.ServicePrincipal(service='ec2.amazonaws.com'),
             role_name='ec2-role',
             managed_policies=[iam.ManagedPolicy.from_aws_managed_policy_name(
-                managed_policy_name='service-role/AWSLambdaBasicExecutionRole'
+                managed_policy_name='AmazonEC2ReadOnlyAccess'
             )]
+        )
+
+        self.instance_role.add_to_policy(
+            statement=iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=['ec2:ImportKeyPair','ec2:CreateKeyPair','ec2:DescribeKeyPairs','ec2:DeleteKeyPair'],
+                resources=['*']
+            )
         )
