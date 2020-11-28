@@ -2,6 +2,7 @@ import sys
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
+    aws_ssm as ssm,
     core
 )
 
@@ -10,29 +11,43 @@ class KubeCdkStack(core.Stack):
 
     def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        prj_name=self.node.try_get_context("project_name")
+        env_name=self.node.try_get_context("env")
 
         # The code that defines your stack goes here
-        vpc = ec2.Vpc(self, "VPC",
-            nat_gateways=0,
-            subnet_configuration=[ec2.SubnetConfiguration(name="public",subnet_type=ec2.SubnetType.PUBLIC)]
-            )
-        
-        # AMI
-        amzn_linux = ec2.MachineImage.latest_amazon_linux(
-            generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
-            edition=ec2.AmazonLinuxEdition.STANDARD,
-            virtualization=ec2.AmazonLinuxVirt.HVM,
-            storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE
-            )
+        self.vpc = ec2.Vpc(self, 'kVPC',
+            cidr='172.17.0.0/16',
+            max_azs=2,
+            enable_dns_hostnames=True,
+            enable_dns_support=True,
+            subnet_configuration=[
+                ec2.SubnetConfiguration(
+                    name="Public",
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                    cidr_mask=24
+                ),
+                ec2.SubnetConfiguration(
+                    name="Private",
+                    subnet_type=ec2.SubnetType.PRIVATE,
+                    cidr_mask=24
+                ),
+                ec2.SubnetConfiguration(
+                    name="Isolate",
+                    subnet_type=ec2.SubnetType.ISOLATED,
+                    cidr_mask=24
+                )
+            ],
+            nat_gateways=1
+        )
 
-        # IAM role
-        iamrole = iam.Role(self,"InstanceSSM", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
-        iamrole.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonEC2RoleforSSM"))
+        priv_subnets = [subnet.subnet_id for subnet in self.vpc.private_subnets]
+        # for each subnet in self.vpc.private_subnets, assign subnet.subnet_id to list priv_subnets
+        # this is a shorthand expression
 
-        # Instance
-        instance = ec2.Instance(self, "Instance",
-            instance_type=ec2.InstanceType("t2.micro"),
-            machine_image=amzn_linux,
-            vpc=vpc,
-            role=iamrole
+        pscount = 1
+        for ps in priv_subnets:
+            ssm.StringParameter(self,'private-subnet-'+str(pscount),
+                string_value=ps,
+                parameter_name='/'+env_name+'/private-subnet-'+str(pscount)
             )
+            pscount+=1

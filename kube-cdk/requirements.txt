@@ -1,2 +1,2 @@
-aws_cdk.aws_s3
+aws_cdk.aws_kms
 -e .
