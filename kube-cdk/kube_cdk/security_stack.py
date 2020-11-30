@@ -1,7 +1,6 @@
 from aws_cdk import (
     aws_iam as iam,
     aws_ec2 as ec2,
-    #aws_ssm as ssm,
     core
 )
 
@@ -25,6 +24,8 @@ class SecurityStack(core.Stack):
             description="SG for public instances",
             allow_all_outbound=True
         )
+        self.public_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22),"SSH Access")
+        self.public_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.all_icmp(),"Ping from VPC") 
 
         self.private_sg = ec2.SecurityGroup(self, 'privatesg',
             security_group_name='private-sg',
@@ -32,19 +33,16 @@ class SecurityStack(core.Stack):
             description="SG for private instances",
             allow_all_outbound=True
         )
+        self.private_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22),"SSH Access")
+        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block), ec2.Port.all_icmp(),"Ping from VPC") 
 
-        self.endpoint_sg = ec2.CfnSecurityGroup(self, 'endpointsg',
-            group_name='endpoint-sg',
-            vpc_id=vpc.vpc_id,
-            group_description="SG for VPC endpoint",
-            security_group_ingress=[ec2.CfnSecurityGroup.IngressProperty(
-                ip_protocol="tcp",
-                from_port=443,
-                to_port=443,
-                cidr_ip="0.0.0.0/0")
-            ]
-            # ref https://github.com/aws/aws-cdk/issues/3457
+        self.endpoint_sg = ec2.SecurityGroup(self, 'endpointsg',
+            security_group_name='endpoint-sg',
+            vpc=vpc,
+            description="SG for VPC endpoint",
+            allow_all_outbound=True
         )
+        self.endpoint_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(443),"VPC endpoint use 443")
 
         self.instance_role = iam.Role(self, 'instancerole',
             assumed_by=iam.ServicePrincipal(service='ec2.amazonaws.com'),

@@ -2,7 +2,6 @@ import sys
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_iam as iam,
-    #aws_ssm as ssm,
     core
 )
 
@@ -34,7 +33,6 @@ class VPCStack(core.Stack):
             ],
             nat_gateways=1
         )
-
 
         priv_subnets = [subnet.subnet_id for subnet in self.vpc.private_subnets]
         # for each subnet in self.vpc.private_subnets, assign subnet.subnet_id to list priv_subnets
