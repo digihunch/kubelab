@@ -33,7 +33,22 @@ class PublicInstanceStack(core.Stack):
             desired_capacity=2,
             max_capacity=2,
             min_capacity=2,
-            init=ec2.CloudFormationInit.from_config_sets(
+            signals=autoscaling.Signals.wait_for_all(timeout=core.Duration.minutes(5)),
+            security_group=inst_sg
+        )
+        asg_logical_id=str(asg.node.default_child.logical_id)
+        #print("logical id:"+str(asg.node.default_child.logical_id))
+        #print("logical id:"+asg.auto_scaling_group_name)
+        # The shell environment variable $ASGLOGICALID was set correctly in UserData, and persisted to when config set is executed with ec2.InitCommand. 
+        # However, I had a hard time accessing logical resource ID of AutoScalingGroup because ec2.InitFile does not replace shell environment variable with actual value.
+        # I have tried all the followings to no avail:
+        #    1. When referenced as ${ASGLOGICALID} or as "${ASGLOGICALID}", it was interpreted as a literal resource name and cause ValidationError
+        #    2. When referenced as $ASGLOGICALID, it was interpreted 
+        # As a result, I had to split the initialization of asg into three steps.
+        #    1. initialize asg without init, or init_options
+        #    2. store logical ID of asg into python variable asg_logical_id
+        #    3. add init and init_options to asg, which uses the value of asg_logical_id.
+        asg.apply_cloud_formation_init(ec2.CloudFormationInit.from_config_sets(
                 config_sets={
                     "config_set_1":["config_step1","config_step2"],
                     "config_set_2":["config_step3","config_step4","config_step5"]
@@ -43,7 +58,7 @@ class PublicInstanceStack(core.Stack):
                         ec2.InitPackage.yum("git")
                     ]),
                     "config_step2": ec2.InitConfig([
-                        ec2.InitPackage.yum("jq")
+                        ec2.InitCommand.shell_command("echo configset thinks ASGLOGICALID=$ASGLOGICALID")
                     ]),
                     "config_step3": ec2.InitConfig([
                         ec2.InitFile.from_string(
@@ -51,8 +66,8 @@ class PublicInstanceStack(core.Stack):
                             content=core.Fn.sub('\n'.join((
                                 "[cfn-auto-reloader-hook]",
                                 "triggers=post.update",
-                                "path=Resources.LogicalID.Metadata.AWS::CloudFormation::Init",
-                                "action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LogicalID --configsets config_set_1"
+                                "path=Resources."+asg_logical_id+".Metadata.AWS::CloudFormation::Init",
+                                "action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource "+asg_logical_id+" --configsets config_set_1,config_set_2"
                             ))),
                             group='root',
                             owner='root',
@@ -86,11 +101,7 @@ class PublicInstanceStack(core.Stack):
                     ])
                 }
             ),
-            init_options=autoscaling.ApplyCloudFormationInitOptions(
-                config_sets=["config_set_1","config_set_2"]
-            ),
-            signals=autoscaling.Signals.wait_for_all(timeout=core.Duration.minutes(5)),
-            security_group=inst_sg
-            )
-        #print("logical id"+autoscaling.CfnAutoScalingGroup(asg.node.default_child).logical_id)
-        #core.CfnOutput(self, "Output", value='resource-id'+self.asg.logical_id)
+            config_sets=["config_set_1","config_set_2"],
+            print_log=True
+        )
+        core.CfnOutput(self, "Output", value='logical resource id of asg: '+str(asg.node.default_child.logical_id))
