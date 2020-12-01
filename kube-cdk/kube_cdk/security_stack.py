@@ -42,7 +42,7 @@ class SecurityStack(core.Stack):
             description="SG for VPC endpoint",
             allow_all_outbound=True
         )
-        self.endpoint_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(443),"VPC endpoint use 443")
+        self.endpoint_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(443),"VPC endpoint uses TCP port 443")
 
         self.instance_role = iam.Role(self, 'instancerole',
             assumed_by=iam.ServicePrincipal(service='ec2.amazonaws.com'),

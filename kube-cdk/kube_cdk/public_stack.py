@@ -8,7 +8,7 @@ from aws_cdk import (
 with open('./user_data/user_data_public.sh') as f:
     user_data_public = f.read()
 
-class PublicInstanceStack(core.Stack):
+class PublicStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, vpc: ec2.Vpc, inst_sg: ec2.SecurityGroup, role: iam.IRole, keyname: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -105,3 +105,5 @@ class PublicInstanceStack(core.Stack):
             print_log=True
         )
         core.CfnOutput(self, "Output", value='logical resource id of asg: '+str(asg.node.default_child.logical_id))
+        #core.CfnOutput(self, "cfnasg", value='cfnasg: '+asg.node.default_child.to_string())
+        #core.CfnOutput(self, "asg", value='asg: '+asg.to_string())

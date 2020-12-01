@@ -5,13 +5,12 @@
 echo Entering user_data_bastion.sh, stackId=${AWS::StackId}, stackName=${AWS::StackName}, region=${AWS::Region}
 yum-config-manager --enable epel
 yum -y update
-yum -y install jq
-
+aws configure set region ${AWS::Region} 
 runuser -l ec2-user -c 'aws configure set region ${AWS::Region} && \
                         MyInstID=`curl -s http://169.254.169.254/latest/meta-data/instance-id` && \
                         KeyPairName=$MyInstID-pubkey && \
                         echo Creating KeyPair $KeyPairName && \
-                        aws ec2 create-key-pair --key-name $KeyPairName | jq -r ".KeyMaterial" > ~/.ssh/id_rsa && \
+                        aws ec2 create-key-pair --key-name $KeyPairName --query "KeyMaterial" --output text > ~/.ssh/id_rsa && \
                         chmod 400 ~/.ssh/id_rsa && \
                         echo KeyPair $KeyPairName has been created.'
 
