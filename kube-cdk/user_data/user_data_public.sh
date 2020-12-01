@@ -1,8 +1,11 @@
 #! /bin/bash
-echo entering user data script
+echo Entering user_data_public.sh, stackId=${AWS::StackId}, stackName=${AWS::StackName}, region=${AWS::Region}
 
-yum update -y aws-cfn-bootstrap
+yum-config-manager --enable epel
 yum -y update
 
-echo leaving user data script
+runuser -l ec2-user -c 'aws configure set region ${AWS::Region} && \
+                        MyInstID=`curl -s http://169.254.169.254/latest/meta-data/instance-id` && \
+                        echo InstanceID=$MyInstID'
 
+echo leaving user_data_public.sh

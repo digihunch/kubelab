@@ -10,7 +10,9 @@ with open('./user_data/user_data_bastion.sh') as f:
 class BastionStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, vpc: ec2.Vpc, bstn_sg: ec2.SecurityGroup, role: iam.IRole, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-
+        # https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_ec2/ApplyCloudFormationInitOptions.html#applycloudformationinitoptions
+        # Note, if CloudFormationInit is specified, with config_sets, then config_sets are implicitly activated via ApplyCloudFormationInitOptions
+        # There is no need to explicitly call cfn-init with configset in UserData script because it's done implicitly!
         bastion_host = ec2.Instance(self,'bastion-host',
             instance_type=ec2.InstanceType('t2.micro'),
             machine_image=ec2.AmazonLinuxImage(
@@ -48,7 +50,13 @@ class BastionStack(core.Stack):
             init_options=ec2.ApplyCloudFormationInitOptions(
                 config_sets=["config_set_1","config_set_2"],
                 #ignore_failures=True,
-                timeout=core.Duration.minutes(30)
+                print_log=True,
+                timeout=core.Duration.minutes(10)
             )
         )
         self.pubkey = bastion_host.instance_id + '-pubkey'
+
+        core.CfnOutput(self, "Output", value='ec2-user@'+bastion_host.instance_public_dns_name)
+
+    #def __del__(self):
+    #    print("destructor test")
