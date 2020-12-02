@@ -34,16 +34,18 @@ class BastionStack(core.Stack):
                 },
                 configs={
                     "config_step1": ec2.InitConfig([
-                        ec2.InitPackage.yum("python3")
+                        ec2.InitPackage.yum("python3"),
+                        ec2.InitPackage.yum("python-netaddr"),
+                        ec2.InitPackage.yum("git")
                     ]),
                     "config_step2": ec2.InitConfig([
-                        ec2.InitPackage.yum("git")
+                        ec2.InitCommand.shell_command("amazon-linux-extras install -y ansible2")
                     ]),
                     "config_step3": ec2.InitConfig([
                         ec2.InitCommand.shell_command("git clone https://github.com/kubernetes-sigs/kubespray.git && chown -R ec2-user:ec2-user *",cwd="/home/ec2-user/")
                     ]),
                     "config_step4": ec2.InitConfig([
-                        ec2.InitCommand.shell_command("amazon-linux-extras install -y ansible2")
+                        ec2.InitCommand.shell_command("runuser -l ec2-user -c 'pip3 install -r ~/kubespray/requirements.txt --user'")
                     ])
                 }
             ),

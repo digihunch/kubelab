@@ -34,7 +34,14 @@ class SecurityStack(core.Stack):
             allow_all_outbound=True
         )
         self.private_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22),"SSH Access")
-        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block), ec2.Port.all_icmp(),"Ping from VPC") 
+        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.all_icmp(),"Ping from VPC") 
+        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp(6443),"TCP port required for kubernetes master")
+        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp_range(2379,2380),"TCP port required for kubernetes master")
+        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp_range(10250,10252),"TCP port required for kubernetes master")
+        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp(10255),"TCP port required for kubernetes master AND node")
+        # 10250 and 10255 are also required for node.
+        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp_range(30000,32767),"TCP port required for kubernetes node")
+        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp(6783),"TCP port required for kubernetes node")
 
         self.endpoint_sg = ec2.SecurityGroup(self, 'endpointsg',
             security_group_name='endpoint-sg',
@@ -54,7 +61,7 @@ class SecurityStack(core.Stack):
         self.instance_role.add_to_policy(
             statement=iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
-                actions=['ec2:ImportKeyPair','ec2:CreateKeyPair','ec2:DescribeKeyPairs','ec2:DeleteKeyPair'],
+                actions=['ec2:ImportKeyPair','ec2:CreateKeyPair','ec2:DescribeKeyPairs'],  # 'ec2:DeleteKeyPair' isn't needed
                 resources=['*']
             )
         )
