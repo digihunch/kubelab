@@ -25,9 +25,15 @@ We can now validate syntax with cdk, by running:
 
 To actually deploy a stack, we can run:
 > cdk deploy vpc-stack
+
 > cdk deploy security-stack
+
 > cdk deploy bastion-stack
+
 > cdk deploy private-stack
+
+# The cluster
+The kube-cdk directory includes the CDK files required to create Cloudformation stacks. The VCP stack provisions the public and private networks. The security stack includes security groups required for each instance. For example, on the private instances, it opens the ports that are required by Kubernetes Master and nodes, to the entire VPC. The bastion stack includes the bastion host, to be placed in public subnet. During creation of bastion host, it generates a new RSA key pair and ec2-user will use the newly generated private key. With the public key registered with AWS and used during the creation of other instances. It is expected that once you SSH to the bastion host, you can connect to any other instance with key authentication. 
 
 # Kubespray
 
