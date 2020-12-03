@@ -28,9 +28,9 @@ To actually deploy a stack, we can run:
 
 > cdk deploy security-stack
 
-> cdk deploy bastion-stack
+> cdk deploy bastion-stack --require-approval=never
 
-> cdk deploy private-stack
+> cdk deploy private-stack --require-approval=never
 
 # The cluster
 The kube-cdk directory includes the CDK files required to create Cloudformation stacks. The VCP stack provisions the public and private networks. The security stack includes security groups required for each instance. For example, on the private instances, it opens the ports that are required by Kubernetes Master and nodes, to the entire VPC. The bastion stack includes the bastion host, to be placed in public subnet. During creation of bastion host, it generates a new RSA key pair and ec2-user will use the newly generated private key. With the public key registered with AWS and used during the creation of other instances. It is expected that once you SSH to the bastion host, you can connect to any other instance with key authentication. 
@@ -38,10 +38,18 @@ The kube-cdk directory includes the CDK files required to create Cloudformation 
 # Kubespray
 
 [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/) is a project to simplify the configuration of Kubernetes nodes.  The configuration files are hosted in [this](https://github.com/kubernetes-sigs/kubespray) repository, and [this](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#building-your-own-inventory) is a good instruction.
-By default, three EC2 instances (t2.small) will be created in private subnet to serve as Kubernetes cluster. The existing environment needs to meet the requirement as listed the documentation. I created a little helper script (kube-helper.sh) to smooth out this step. The helper script looks up on the autoscaling group for private instances, with IP address returned, the script uses the tool provided in Kubespray to configure the Ansible inventory.
+By default, three EC2 instances (t2.small) will be created in private subnet to serve as Kubernetes cluster. The existing environment needs to meet the [requirement](https://github.com/kubernetes-sigs/kubespray#requirements) as listed the documentation. I created a little helper script (kube-helper.sh) to smooth out this step. The helper script looks up on the autoscaling group for private instances, with IP address returned, the script uses the tool provided in Kubespray to configure the Ansible inventory.
 The helper script will provide the command to run at the end, which is:
->cd kubespray && ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v
+>ansible-playbook -i kubespray/inventory/mycluster/hosts.yaml cluster.yml -b -v
 
 This will kick of the playbooks required for configuration on the target hosts. The configuration process should take about 10 minutes.
+There is also an illustrated, but kind of out-dated instruction [here](https://dzone.com/articles/kubespray-10-simple-steps-for-installing-a-product).
 
+After the kubespray work, you need to copy configuration file:
+> ansible node1 -m fetch -a "src=/root/.kube/config dest=/home/ec2-user/.kube/config flat=yes" -i kubespray/inventory/mycluster/hosts.yaml --become
+
+Then you can test with kubectl commands.
+> kubectl cluster-info
+> kubectl get nodes
+> kubectl get pods
 

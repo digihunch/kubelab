@@ -5,7 +5,7 @@ from aws_cdk import (
     core
 )
 
-with open('./user_data/user_data_private.sh') as f:
+with open('./script/user_data_private.sh') as f:
     user_data_private = f.read()
 
 class PrivateStack(core.Stack):
@@ -35,9 +35,9 @@ class PrivateStack(core.Stack):
             user_data=ec2.UserData.custom(core.Fn.sub(user_data_private)),
             key_name=keyname,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
-            desired_capacity=3,
-            max_capacity=3,
-            min_capacity=3,
+            desired_capacity=5,
+            max_capacity=5,
+            min_capacity=5,
             signals=autoscaling.Signals.wait_for_all(timeout=core.Duration.minutes(5)),
             security_group=inst_sg
         )

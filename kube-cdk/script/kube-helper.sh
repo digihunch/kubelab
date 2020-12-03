@@ -10,4 +10,7 @@ done
 cd /home/ec2-user/kubespray 
 CONFIG_FILE=inventory/mycluster/hosts.yaml python3 contrib/inventory_builder/inventory.py ${IPS[@]}
 echo "Please run the command below to start configuration of kube nodes on ${IPS[@]}"
-echo "cd kubespray && ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v"
+echo "cd kubespray && ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v"   # must run ansible-playbook from kubespray directory in order to use the config in there.
+mkdir -p /home/ec2-user/.kube
+echo "The configuration will take about 10 minutes. Then configure kubectl on this vm by running:"
+echo "ansible node1 -m fetch -a \"src=/root/.kube/config dest=/home/ec2-user/.kube/config flat=yes\" -i inventory/mycluster/hosts.yaml --become"

@@ -14,5 +14,9 @@ runuser -l ec2-user -c 'aws configure set region ${AWS::Region} && \
                         chmod 400 ~/.ssh/id_rsa && \
                         echo KeyPair $KeyPairName has been created.'
 
+curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" && \
+chmod 755 ./kubectl && mv ./kubectl /usr/local/bin/kubectl
+runuser -l ec2-user -c 'kubectl version --client'
+
 echo Leaving user_data_bastion.sh
 

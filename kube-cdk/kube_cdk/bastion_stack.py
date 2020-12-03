@@ -4,7 +4,7 @@ from aws_cdk import (
     core
 )
 
-with open('./user_data/user_data_bastion.sh') as f:
+with open('./script/user_data_bastion.sh') as f:
     user_data_bastion = f.read()
 
 class BastionStack(core.Stack):
@@ -47,7 +47,7 @@ class BastionStack(core.Stack):
                         #ec2.InitCommand.shell_command("yum -y remove python-jinja2") 
                         ec2.InitFile.from_file_inline(
                             target_file_name='/home/ec2-user/kube-helper.sh',
-                            source_file_name='asset/kube-helper.sh',
+                            source_file_name='script/kube-helper.sh',
                             group='ec2-user',
                             owner='ec2-user',
                             mode='000755'

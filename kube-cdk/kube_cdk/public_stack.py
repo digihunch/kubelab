@@ -5,7 +5,7 @@ from aws_cdk import (
     core
 )
 
-with open('./user_data/user_data_public.sh') as f:
+with open('./script/user_data_public.sh') as f:
     user_data_public = f.read()
 
 class PublicStack(core.Stack):
