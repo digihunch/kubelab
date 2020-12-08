@@ -6,6 +6,7 @@ While there is AKS, for learning at a closer distance it is beneficial to self-m
 
 AWS CDK is a development kit that can be used to generate CloudFormation template. It support a number of programming languages and significantly increase code reusability. To install or upgrade AWS CDK, you need npm:
 > npm install -g aws-cdk
+
 > npm update -g aws-cdk
 
 To initialize a project, e.g. in Python, create an empty directory with project name(e.g. kubelab). Then run the following from within the directory:
@@ -50,6 +51,8 @@ After the kubespray work, you need to copy configuration file:
 
 Then you can test with kubectl commands.
 > kubectl cluster-info
+
 > kubectl get nodes
+
 > kubectl get pods
 
