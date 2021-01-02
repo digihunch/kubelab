@@ -4,6 +4,8 @@ from aws_cdk import (
     core
 )
 
+instance_type="t2.micro"
+
 with open('./script/user_data_bastion.sh') as f:
     user_data_bastion = f.read()
 
@@ -14,7 +16,7 @@ class BastionStack(core.Stack):
         # Note, if CloudFormationInit is specified, with config_sets, then config_sets are implicitly activated via ApplyCloudFormationInitOptions
         # There is no need to explicitly call cfn-init with configset in UserData script because it's done implicitly!
         bastion_host = ec2.Instance(self,'bastion-host',
-            instance_type=ec2.InstanceType('t2.micro'),
+            instance_type=ec2.InstanceType(instance_type),
             machine_image=ec2.AmazonLinuxImage(
                 edition=ec2.AmazonLinuxEdition.STANDARD,
                 generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,

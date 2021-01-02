@@ -5,6 +5,8 @@ from aws_cdk import (
     core
 )
 
+instance_type="t2.small"
+
 with open('./script/user_data_public.sh') as f:
     user_data_public = f.read()
 
@@ -20,7 +22,7 @@ class PublicStack(core.Stack):
         asg = autoscaling.AutoScalingGroup(self,"PublicInstanceASG",
             role=role,
             vpc=vpc,
-            instance_type=ec2.InstanceType(instance_type_identifier="t2.small"),
+            instance_type=ec2.InstanceType(instance_type_identifier=instance_type),
             machine_image=ec2.AmazonLinuxImage(
                 edition=ec2.AmazonLinuxEdition.STANDARD,
                 generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
