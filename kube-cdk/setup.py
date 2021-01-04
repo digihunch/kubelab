@@ -19,7 +19,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="kube_cdk"),
 
     install_requires=[
-        "aws-cdk.core==1.77.0",
+        "aws-cdk.core==1.82.0",
     ],
 
     python_requires=">=3.6",
