@@ -1,4 +1,4 @@
-# KubeLab - prepare Kubernetes infrastructure on AWS 
+# KubeLab - Use AWS CDK to self-host a Kubernetes cluster 
 
 While there is AKS, for learning at a closer distance it is beneficial to self-manage a cluster of K8s nodes, instead of a single node. This project provides Infrastructure as Code (AWS CDK in Python) to provision private instances on AWS, then provision the Kubernetes nodes with Kubespray.
 
@@ -11,6 +11,9 @@ AWS CDK is a development kit that can be used to generate CloudFormation templat
 
 To initialize a project, e.g. in Python, create an empty directory with project name(e.g. kubelab). Then run the following from within the directory:
 > ckd init app --language python
+
+To re-create virtual environment in existing project directory, run:
+> python3 -m venv .venv
 
 In order to not mess up existing Python environment, we will use **virtual environment** for the project. To start virtual environment, run:
 > source .venv/bin/activate
