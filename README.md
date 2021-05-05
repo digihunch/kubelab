@@ -43,6 +43,9 @@ The kube-cdk directory includes the CDK files required to create Cloudformation 
 
 [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/) is a project to simplify the configuration of Kubernetes nodes.  The configuration files are hosted in [this](https://github.com/kubernetes-sigs/kubespray) repository, and [this](https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md#building-your-own-inventory) is a good instruction.
 By default, three EC2 instances (t2.small) will be created in private subnet to serve as Kubernetes cluster. The existing environment needs to meet the [requirement](https://github.com/kubernetes-sigs/kubespray#requirements) as listed the documentation. I created a little helper script (kube-helper.sh) to smooth out this step. The helper script looks up on the autoscaling group for private instances, with IP address returned, the script uses the tool provided in Kubespray to configure the Ansible inventory.
+
+> /home/ec2-user/kubespray/kube-helper.sh
+
 The helper script will provide the command to run at the end, which is:
 > ansible-playbook cluster.yml -b -v
 
