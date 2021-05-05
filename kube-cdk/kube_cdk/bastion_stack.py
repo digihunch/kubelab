@@ -41,6 +41,9 @@ class BastionStack(core.Stack):
                         ec2.InitPackage.yum("git")
                     ]),
                     "config_step2": ec2.InitConfig([
+                        ec2.InitCommand.shell_command("git clone https://github.com/kubernetes-sigs/kubespray.git && chown -R ec2-user:ec2-user *",cwd="/home/ec2-user/")
+                    ]),
+                    "config_step3": ec2.InitConfig([
                         # No need to install ansible2 via amazon-linux-extras because it will be installed as python requirement. Installing it here brings a 
                         # negative impact of making ansible use python-jinja2, which will confuse the kubespray script later on with templating error.
                         # although the templating error can be mitigated with removal of python-jinja2, the package cloud-init depending on python-jinja2 will
@@ -48,15 +51,19 @@ class BastionStack(core.Stack):
                         #ec2.InitCommand.shell_command("amazon-linux-extras install -y ansible2")
                         #ec2.InitCommand.shell_command("yum -y remove python-jinja2") 
                         ec2.InitFile.from_file_inline(
-                            target_file_name='/home/ec2-user/kube-helper.sh',
+                            target_file_name='/home/ec2-user/kubespray/kube-helper.sh',
                             source_file_name='script/kube-helper.sh',
                             group='ec2-user',
                             owner='ec2-user',
                             mode='000755'
+                        ),
+                        ec2.InitFile.from_file_inline(
+                            target_file_name='/home/ec2-user/kubespray/setup-kubectl-local.yml',
+                            source_file_name='script/setup-kubectl-local.yml',
+                            group='ec2-user',
+                            owner='ec2-user',
+                            mode='000755'
                         )
-                    ]),
-                    "config_step3": ec2.InitConfig([
-                        ec2.InitCommand.shell_command("git clone https://github.com/kubernetes-sigs/kubespray.git && chown -R ec2-user:ec2-user *",cwd="/home/ec2-user/")
                     ]),
                     "config_step4": ec2.InitConfig([
                         ec2.InitCommand.shell_command("runuser -l ec2-user -c 'pip3 install -r ~/kubespray/requirements.txt --user'"),

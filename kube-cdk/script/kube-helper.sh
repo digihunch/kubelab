@@ -3,14 +3,16 @@
 # reference: https://github.com/kubernetes-sigs/kubespray
 declare -a IPS=""
 for ID in $(aws autoscaling describe-auto-scaling-instances --query "AutoScalingInstances[?contains(AutoScalingGroupName,'PrivateInstanceASG')].InstanceId" --output text);
-do 
+do
     IPS+=($(aws ec2 describe-instances --instance-ids $ID --query Reservations[].Instances[].PrivateIpAddress --output text));
 done
 
-cd /home/ec2-user/kubespray 
-CONFIG_FILE=inventory/mycluster/hosts.yaml python3 contrib/inventory_builder/inventory.py ${IPS[@]}
+CONFIG_FILE=inventory/mycluster/hosts.yaml
+python3 contrib/inventory_builder/inventory.py ${IPS[@]}
+sed -i '/^\[defaults\]$/a inventory = '"$CONFIG_FILE" ansible.cfg
+sed -i '/Stop if unknown OS/,+6d' ./roles/kubernetes/preinstall/tasks/0020-verify-settings.yml # remove OS check because Amazon is not on the list
+export ANSIBLE_CONFIG=$(realpath ansible.cfg)
+
 echo "Please run the command below to start configuration of kube nodes on ${IPS[@]}"
-echo "cd kubespray && ansible-playbook -i inventory/mycluster/hosts.yaml cluster.yml -b -v"   # must run ansible-playbook from kubespray directory in order to use the config in there.
-mkdir -p /home/ec2-user/.kube
-echo "The configuration will take about 10 minutes. Then configure kubectl on this vm by running:"
-echo "ansible node1 -m fetch -a \"src=/root/.kube/config dest=/home/ec2-user/.kube/config flat=yes\" -i inventory/mycluster/hosts.yaml --become"
+echo "ansible-playbook cluster.yml -b -v"
+echo "ansible-playbook setup-kubectl-local.yml -v"
