@@ -35,6 +35,7 @@ class SecurityStack(core.Stack):
         )
         self.private_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22),"SSH Access")
         self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.all_icmp(),"Ping from VPC") 
+        self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp(179),"TCP port required for BGP connectvity with calico plug")
         self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp(6443),"TCP port required for kubernetes master")
         self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp_range(2379,2380),"TCP port required for kubernetes master")
         self.private_sg.add_ingress_rule(ec2.Peer.ipv4(vpc.vpc_cidr_block),ec2.Port.tcp_range(10250,10252),"TCP port required for kubernetes master")
