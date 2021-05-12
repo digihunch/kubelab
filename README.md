@@ -1,6 +1,7 @@
 # KubeLab - Use AWS CDK to self-host a Kubernetes cluster 
 
 While there is AKS, for learning at a closer distance it is beneficial to self-manage a cluster of K8s nodes, instead of a single node. This project provides Infrastructure as Code (AWS CDK in Python) to provision private instances on AWS, then provision the Kubernetes nodes with Kubespray.
+
 ![Diagram](diagram/kubelab.png)
 
 # AWS CDK
