@@ -10,7 +10,6 @@ done
 export CONFIG_FILE=inventory/mycluster/hosts.yaml
 python3 contrib/inventory_builder/inventory.py ${IPS[@]}
 sed -i '/^\[defaults\]$/a inventory = '"$CONFIG_FILE" ansible.cfg
-sed -i '/Stop if unknown OS/,+6d' ./roles/kubernetes/preinstall/tasks/0020-verify-settings.yml # remove OS check because Amazon is not on the list
 echo "Please run the command below to start configuration of kube nodes on ${IPS[@]}"
 echo "ansible-playbook cluster.yml -b -v | tee /tmp/kcluster.log"
 echo "ansible-playbook setup-kubectl-local.yml -v"
